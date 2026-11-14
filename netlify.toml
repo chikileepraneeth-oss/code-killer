@@ -1,0 +1,18 @@
+# Netlify: the web client. Leave "Base directory" and the other build fields EMPTY in the Netlify UI;
+# this file (read from the repo root) sets them. Building from base "client" inside the full repo
+# checkout keeps ../shared available to Vite.
+# Required environment variable (Netlify UI): VITE_SERVER_URL=https://<your-service>.onrender.com
+
+[build]
+  base = "client"
+  command = "npm run build"
+  publish = "dist" # relative to base -> client/dist
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Single-page app: /<ROOMCODE> and any other path serve index.html (200 rewrite, not a redirect)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

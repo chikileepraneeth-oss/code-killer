@@ -1,0 +1,21 @@
+# Render Blueprint: the CODE KILLER game server (Render -> New + -> Blueprint -> this repo).
+# The web client is NOT deployed here; it goes on Netlify (see netlify.toml).
+# No rootDir: the build runs at the repo root so server/ can import ../shared at runtime.
+# Node version comes from "engines" in package.json.
+services:
+  - type: web
+    name: code-killer-server
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: npm ci --omit=dev --workspace=server
+    startCommand: node server/src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_ORIGIN
+        sync: false # your Netlify URL, e.g. https://code-killer.netlify.app (comma-separate several, no trailing slash)
+      - key: STATS_KEY
+        generateValue: true # protects /stats?key=... and /spikes?key=...

@@ -1,0 +1,105 @@
+/* ===================== v2 panels (items, bounty, vents, security, weather) ===================== */
+.pill.small b { font-size: 0.8rem; letter-spacing: 0.15em; }
+.map-size { font-size: 0.85rem; color: var(--cyan); letter-spacing: 0.08em; padding: 4px 8px; border: 1px dashed rgba(62,199,255,0.35); border-radius: 8px; text-align: center; }
+
+.weather-pill { position: absolute; top: 54px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; display: flex; gap: 6px; align-items: center; white-space: nowrap; }
+.weather-pill .ico { font-size: 1rem; }
+
+.mycode.revealed { border-color: var(--yellow); box-shadow: 0 0 24px rgba(255,210,63,0.5); }
+.mycode.revealed .digits { color: var(--yellow); text-shadow: 0 0 10px rgba(255,210,63,0.9); }
+
+/* Inventory: two 3D slots */
+.inventory { position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; perspective: 600px; pointer-events: auto; align-items: flex-end; }
+.inventory.hidden { display: none; }
+.inventory .slot {
+  --rc: rgba(255,255,255,0.15);
+  position: relative; width: 132px; height: 56px; border-radius: 12px; display: flex; align-items: center; gap: 8px; padding: 0 10px;
+  background: linear-gradient(160deg, rgba(30,22,46,0.85), rgba(10,7,16,0.85)); border: 1px solid var(--rc);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.5), 0 0 16px color-mix(in srgb, var(--rc) 45%, transparent), inset 0 0 14px color-mix(in srgb, var(--rc) 20%, transparent);
+  transform: rotateX(18deg); transform-style: preserve-3d; transition: transform 0.25s, box-shadow 0.25s;
+}
+.inventory .slot:hover { transform: rotateX(0deg) translateY(-4px); }
+.inventory .slot.empty { opacity: 0.55; }
+.inventory .slot .key { position: absolute; top: -9px; left: -7px; font-family: var(--mono); font-size: 0.75rem; background: #000; border: 1px solid var(--rc); border-radius: 5px; padding: 0 5px; }
+.inventory .slot .icon { font-size: 1.6rem; width: 32px; text-align: center; filter: drop-shadow(0 0 6px var(--rc)); }
+.inventory .slot .nm { font-size: 0.82rem; font-weight: 700; line-height: 1.05; text-transform: uppercase; letter-spacing: 0.04em; }
+.inventory .slot .tip { position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%) translateY(6px); width: 230px; padding: 8px 10px; background: rgba(0,0,0,0.9); border: 1px solid var(--rc); border-radius: 9px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: 0.2s; }
+.inventory .slot .tip i { color: var(--muted); font-size: 0.75rem; }
+.inventory .slot:hover .tip { opacity: 1; transform: translateX(-50%); }
+.inventory .slot.used { animation: slotuse 0.5s; }
+@keyframes slotuse { 30% { transform: rotateX(18deg) scale(1.15); box-shadow: 0 0 30px var(--rc); } }
+.inventory .drop-hint { display: none; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); white-space: nowrap; color: var(--yellow); font-size: 0.85rem; }
+.inventory.drop .drop-hint { display: block; }
+.inventory.drop .slot:not(.empty) { border-color: var(--yellow); animation: wobble 0.6s infinite; }
+@keyframes wobble { 50% { transform: rotateX(18deg) rotateZ(2deg); } }
+
+/* Bounty banner */
+.bounty-banner { position: absolute; top: 78px; left: 50%; transform: translateX(-50%) perspective(500px) rotateX(20deg) scale(0.9); padding: 6px 18px; border-radius: 10px; color: #ffd23f; background: rgba(40,28,0,0.7); border: 1px solid rgba(255,200,61,0.7); box-shadow: 0 0 22px rgba(255,200,61,0.35); font-weight: 600; letter-spacing: 0.06em; opacity: 0; transition: 0.3s; white-space: nowrap; }
+.bounty-banner.on { opacity: 1; transform: translateX(-50%) perspective(500px) rotateX(0deg) scale(1); }
+.bounty-banner.mine { animation: bountypulse 1s infinite; }
+@keyframes bountypulse { 50% { box-shadow: 0 0 40px rgba(255,200,61,0.8); } }
+
+/* Lights out warning */
+.lo-warn { position: absolute; top: 18%; left: 0; right: 0; text-align: center; font-family: var(--display); font-weight: 900; font-size: clamp(1.2rem, 3.5vw, 2.2rem); color: #ff2050; letter-spacing: 0.2em; opacity: 0; pointer-events: none; }
+.lo-warn.on { animation: sirenflash 0.5s steps(2) infinite; }
+@keyframes sirenflash { 0% { opacity: 1; text-shadow: 0 0 30px #ff2050; } 100% { opacity: 0.25; } }
+
+/* Mirror glimpse */
+.glimpse { position: absolute; top: 120px; left: 14px; max-width: 300px; padding: 8px 14px; border-radius: 10px; background: rgba(10,14,24,0.85); border: 1px solid rgba(160,200,255,0.5); color: #cfe0ff; font-size: 0.95rem; transform: perspective(600px) rotateY(70deg); transform-origin: left; opacity: 0; transition: 0.45s cubic-bezier(.2,1.2,.4,1); }
+.glimpse.on { transform: perspective(600px) rotateY(0); opacity: 1; }
+.glimpse b { font-family: var(--mono); font-size: 1.4rem; color: #fff; text-shadow: 0 0 12px #9fc8ff; }
+.glimpse span { color: var(--muted); }
+
+/* Vent crawl: cramped */
+/* Cheap to composite over the WebGL canvas: plain alpha (no blend modes, no giant box-shadow) */
+.vent-overlay { position: absolute; inset: 0; display: none; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.85) 80%, #000 100%); }
+.vent-overlay.on { display: block; }
+.vent-overlay::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(0,0,0,0.22) 0 2px, transparent 2px 6px); }
+.vent-help { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); padding: 8px 16px; background: rgba(0,0,0,0.75); border: 1px solid #9aa7ff; border-radius: 10px; color: #cfd6ff; text-align: center; white-space: nowrap; }
+.vent-help b { color: #fff; }
+
+/* Security monitors */
+.security-overlay { position: absolute; inset: 0; display: none; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.security-overlay.on { display: grid; }
+.security-overlay .cam { position: relative; border: 2px solid rgba(62,199,255,0.35); box-shadow: inset 0 0 60px rgba(0,0,0,0.8); background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0 2px, transparent 2px 4px); }
+.security-overlay .cam-label { position: absolute; top: 8px; left: 10px; font-family: var(--mono); color: #9fe2ff; text-shadow: 0 0 6px #3ec7ff; font-size: 0.9rem; }
+.security-overlay .rec { position: absolute; top: 8px; right: 10px; font-family: var(--mono); color: #ff3860; font-size: 0.8rem; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.sec-help { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); padding: 6px 14px; background: rgba(0,0,0,0.8); border-radius: 8px; color: var(--muted); white-space: nowrap; }
+body.watching .inventory, body.watching .hint, body.watching .crosshair, body.watching .minimap { display: none; }
+
+/* Bounty reward choice: two flipping cards */
+.reward { position: fixed; inset: 0; z-index: 6; display: none; align-items: center; justify-content: center; background: radial-gradient(ellipse, rgba(40,28,0,0.55), rgba(0,0,0,0.7)); perspective: 1000px; }
+.reward.on { display: flex; }
+.reward-inner { text-align: center; padding: 0 16px; }
+.reward-title { font-family: var(--display); color: #ffd23f; letter-spacing: 0.15em; margin-bottom: 18px; text-shadow: 0 0 16px rgba(255,200,61,0.7); }
+.reward-timer { color: var(--muted); font-family: var(--mono); }
+.reward-cards { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; }
+.rcard { width: 220px; padding: 22px 16px; border-radius: 16px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; align-items: center; color: var(--text);
+  background: linear-gradient(160deg, rgba(60,44,10,0.92), rgba(20,14,4,0.92)); border: 1px solid rgba(255,200,61,0.7); box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 24px rgba(255,200,61,0.25);
+  animation: cardflip 0.7s cubic-bezier(.2,1.3,.4,1) both; transition: transform 0.2s, box-shadow 0.2s; }
+.rcard:nth-child(2) { animation-delay: 0.12s; }
+.rcard:hover { transform: translateY(-6px) rotateX(8deg); box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(255,200,61,0.6); }
+.rcard .ri { font-size: 2.4rem; }
+.rcard b { font-family: var(--display); letter-spacing: 0.08em; }
+.rcard small { color: var(--muted); }
+@keyframes cardflip { from { transform: rotateY(-180deg) scale(0.7); opacity: 0; } }
+
+.feed .f.bounty { border-right-color: #ffd23f; }
+.feed .f.zone { border-right-color: #ff8a3d; }
+.hint .act.red { color: var(--red); text-shadow: 0 0 10px rgba(255,56,96,0.6); }
+@media (max-width: 600px) {
+  .inventory .slot { width: 104px; }
+  .bounty-banner { font-size: 0.8rem; }
+}
+
+/* FPS meter + graphics picker */
+.fps { position: absolute; right: 14px; bottom: 200px; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); background: rgba(0,0,0,0.45); padding: 2px 8px; border-radius: 6px; }
+.fps.bad { color: var(--red); }
+.gfx-inline { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+.gfx-inline select { padding: 6px 8px; }
+/* First-person: a cleaner crosshair */
+.crosshair { width: 4px; height: 4px; margin: -2px; background: rgba(255,255,255,0.85); box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 8px rgba(255,255,255,0.4); }
+
+.inventory { bottom: 78px; }

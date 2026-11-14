@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CODE KILLER</title>
+  <meta name="theme-color" content="#07060b" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%2307060b%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%23ff3860%22 font-family=%22monospace%22%3E%3F%3F%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="bg-grid" class="bg-grid"></div>
+
+  <!-- HOME -->
+  <section id="home" class="screen active">
+    <div class="stage">
+      <h1 class="logo" data-text="CODE KILLER"><span>CODE</span> <span>KILLER</span></h1>
+      <p class="tagline">Everyone can read your code. Except you.</p>
+      <div class="panel card3d" id="home-card">
+        <label class="field">
+          <span>Your name</span>
+          <input id="name-input" maxlength="16" placeholder="Enter a name" autocomplete="off" />
+        </label>
+        <button id="create-btn" class="btn primary">Create Room</button>
+        <div class="divider"><span>or join</span></div>
+        <div class="join-row">
+          <input id="code-input" class="code-input" maxlength="6" placeholder="ROOM CODE" autocomplete="off" spellcheck="false" />
+          <button id="join-btn" class="btn">Join</button>
+        </div>
+        <label class="field gfx"><span>Graphics</span>
+          <select class="quality-select">
+            <option value="low">Low — fastest (no shadows)</option>
+            <option value="medium">Medium — balanced</option>
+            <option value="high">High — best looking</option>
+          </select>
+        </label>
+        <p id="home-error" class="error"></p>
+        <p id="server-status" class="server-status" role="status" aria-live="polite"></p>
+      </div>
+      <details class="howto panel">
+        <summary>How to play</summary>
+        <ul>
+          <li>A secret 4-digit code floats over every head. You see theirs, never your own (<b>? ? ? ?</b>).</li>
+          <li>Get close to decode digits. Walls block your view.</li>
+          <li>Press <kbd>E</kbd>, type a living player's code, hit <kbd>Enter</kbd> to eliminate them. You move at 20% speed while typing.</li>
+          <li>Wrong guesses are punished. Hide in bushes, lockers and the dark room, standing still.</li>
+          <li>Grab <b class="pink">shuffle</b> orbs for a new code and <b class="green">hoods</b> to mask 2 digits. Collect items (2 slots, keys <kbd>1</kbd>/<kbd>2</kbd>). Stay inside the zone. Last alive wins.</li>
+          <li><kbd>F</kbd> doors, light switches, stairs, wardrobes, vents and security monitors. <kbd>L</kbd> locks a door from the inside. Look into mirrors and puddles to glimpse your own digits.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section id="lobby" class="screen">
+    <div class="stage lobby-stage">
+      <div class="lobby-head">
+        <h2 class="small-logo">CODE KILLER</h2>
+        <button id="room-code" class="room-code" title="Click to copy">
+          <span class="lbl">ROOM</span><span id="room-code-text">------</span><span class="copy">copy</span>
+        </button>
+        <label class="gfx-inline">Graphics
+          <select class="quality-select">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </label>
+        <button id="leave-btn" class="btn ghost-btn">Leave</button>
+      </div>
+      <div class="lobby-grid">
+        <div class="panel card3d">
+          <h3>Players <span id="player-count" class="muted"></span></h3>
+          <ul id="player-list" class="player-list"></ul>
+          <div class="row host-only">
+            <button id="add-bot" class="btn small">+ Bot</button>
+            <button id="remove-bot" class="btn small">− Bot</button>
+          </div>
+        </div>
+        <div class="panel card3d">
+          <h3>Settings <span id="settings-note" class="muted"></span></h3>
+          <form id="settings" class="settings">
+            <div id="map-size" class="map-size"></div>
+            <label>Max players <input type="number" name="maxPlayers" min="2" max="16" /></label>
+            <label>Wrong guess penalty
+              <select name="penaltyType">
+                <option value="lockout">Lockout</option>
+                <option value="reveal">Reveal your location</option>
+                <option value="death">Die after N wrong</option>
+              </select>
+            </label>
+            <label data-pen="lockout">Lockout seconds <input type="number" name="lockoutSeconds" min="1" max="15" /></label>
+            <label data-pen="reveal">Reveal seconds <input type="number" name="revealSeconds" min="3" max="20" /></label>
+            <label data-pen="death">Wrong guesses allowed <input type="number" name="deathAfter" min="1" max="10" /></label>
+            <label>Grace period (s) <input type="number" name="graceSeconds" min="0" max="60" /></label>
+            <label>Zone speed
+              <select name="zoneSpeed">
+                <option value="slow">Slow (long round)</option>
+                <option value="normal">Normal</option>
+                <option value="fast">Fast</option>
+              </select>
+            </label>
+            <label class="check">Lights-out events <input type="checkbox" name="lightsOut" /></label>
+          </form>
+        </div>
+        <div class="panel card3d chat-panel">
+          <h3>Chat</h3>
+          <div id="lobby-chat" class="chat-log"></div>
+          <form id="lobby-chat-form" class="chat-form"><input maxlength="140" placeholder="Say something…" /></form>
+        </div>
+      </div>
+      <button id="start-btn" class="btn primary big">Start Game</button>
+      <p id="lobby-msg" class="muted center"></p>
+    </div>
+  </section>
+
+  <!-- IN-GAME HUD -->
+  <section id="hud" class="screen hud">
+    <div class="hud-tl">
+      <div class="mycode panel" title="This is YOUR code. You can never see it: everyone else can. Find shuffle orbs to change it.">
+        <span class="lbl">YOUR CODE</span>
+        <span class="digits">? ? ? ?</span>
+        <span class="tip">Only others can read it</span>
+      </div>
+      <div class="hp"><div id="hp-bar"></div><span id="hp-text">100</span></div>
+      <div id="status-chips" class="chips"></div>
+    </div>
+    <div class="hud-top">
+      <div class="pill"><span class="lbl">ALIVE</span><b id="alive-count">-</b></div>
+      <div class="pill"><span class="lbl" id="zone-label">ZONE</span><b id="zone-timer">--</b></div>
+      <div class="pill small"><b id="level-pill">GROUND</b></div>
+    </div>
+    <div id="weather" class="weather-pill"></div>
+    <div id="bounty-banner" class="bounty-banner"></div>
+    <div id="lo-warn" class="lo-warn">⚠ LIGHTS OUT IMMINENT ⚠</div>
+    <div id="glimpse" class="glimpse"></div>
+    <div id="inventory" class="inventory">
+      <div class="slot empty" data-slot="0"><span class="key">1</span><span class="icon"></span><span class="nm">empty</span><div class="tip"></div></div>
+      <div class="slot empty" data-slot="1"><span class="key">2</span><span class="icon"></span><span class="nm">empty</span><div class="tip"></div></div>
+      <div class="drop-hint">Drop which? <kbd>1</kbd>/<kbd>2</kbd></div>
+    </div>
+    <div id="vent-overlay" class="vent-overlay"><div class="vent-help"></div></div>
+    <div id="security-overlay" class="security-overlay">
+      <div class="cam"><span class="cam-label"></span><span class="rec">● REC</span></div>
+      <div class="cam"><span class="cam-label"></span><span class="rec">● REC</span></div>
+      <div class="cam"><span class="cam-label"></span><span class="rec">● REC</span></div>
+      <div class="cam"><span class="cam-label"></span><span class="rec">● REC</span></div>
+      <div class="sec-help">SECURITY FEED · codes are readable on camera up close · <kbd>F</kbd> leave the chair</div>
+    </div>
+    <div id="reward" class="reward">
+      <div class="reward-inner">
+        <div class="reward-title">💰 BOUNTY CLAIMED — CHOOSE YOUR REWARD <span class="reward-timer"></span></div>
+        <div class="reward-cards">
+          <button class="rcard" data-choice="reveal"><span class="ri">👁</span><b>Learn your code</b><small>See your own full code for 5 seconds</small><kbd>Z</kbd></button>
+          <button class="rcard" data-choice="shuffle"><span class="ri">🔀</span><b>Instant shuffle</b><small>Get a brand-new code right now</small><kbd>X</kbd></button>
+        </div>
+      </div>
+    </div>
+    <div id="feed" class="feed"></div>
+    <canvas id="minimap" class="minimap" width="180" height="180"></canvas>
+    <div id="hint" class="hint"></div>
+    <div id="crosshair" class="crosshair"></div>
+    <div id="fps" class="fps"></div>
+    <div id="center-msg" class="center-msg"></div>
+    <div id="grace" class="grace"></div>
+    <div id="vignette" class="vignette"></div>
+    <div id="locker-slats" class="locker-slats"></div>
+    <div id="click-to-play" class="click-to-play">Click to look around</div>
+    <div id="game-chat" class="game-chat">
+      <div class="chat-log"></div>
+      <form class="chat-form"><input maxlength="140" placeholder="Chat (Enter to send, Esc to cancel)" /></form>
+    </div>
+    <div id="spectate-bar" class="spectate-bar"></div>
+    <div id="death-screen" class="death-screen"></div>
+  </section>
+
+  <!-- KILL BOX -->
+  <div id="killbox" class="killbox">
+    <div class="kb-inner panel">
+      <div class="kb-title">KILL BOX</div>
+      <div class="kb-digits">
+        <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
+        <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
+        <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
+        <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
+      </div>
+      <div class="kb-lock"><div class="kb-lock-bar"></div></div>
+      <div class="kb-help">Type 4 digits · <kbd>Enter</kbd> strike · <kbd>Esc</kbd>/<kbd>E</kbd> close · you are slowed</div>
+      <div class="kb-msg"></div>
+    </div>
+  </div>
+
+  <!-- WIN -->
+  <section id="win" class="screen">
+    <div class="stage">
+      <div class="win-card card3d panel">
+        <div class="win-sub">LAST ONE STANDING</div>
+        <h2 id="win-name" class="win-name">—</h2>
+        <table class="stats">
+          <thead><tr><th>#</th><th>Player</th><th>Code</th><th>Kills</th><th>Survived</th><th>Wrong</th></tr></thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+        <button id="back-lobby" class="btn primary">Back to Lobby</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
