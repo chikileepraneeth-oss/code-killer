@@ -44,10 +44,10 @@
         <ul>
           <li>A secret 4-digit code floats over every head. You see theirs, never your own (<b>? ? ? ?</b>).</li>
           <li>Get close to decode digits. Walls block your view.</li>
-          <li>Press <kbd>E</kbd>, type a living player's code, hit <kbd>Enter</kbd> to eliminate them. You move at 20% speed while typing.</li>
-          <li>Wrong guesses are punished. Hide in bushes, lockers and the dark room, standing still.</li>
-          <li>Grab <b class="pink">shuffle</b> orbs for a new code and <b class="green">hoods</b> to mask 2 digits. Collect items (2 slots, keys <kbd>1</kbd>/<kbd>2</kbd>). Stay inside the zone. Last alive wins.</li>
-          <li><kbd>F</kbd> doors, light switches, stairs, wardrobes, vents and security monitors. <kbd>L</kbd> locks a door from the inside. Look into mirrors and puddles to glimpse your own digits.</li>
+          <li>To strike, just <b>type a living player's 4 digits</b>. They show at the bottom of your screen as you type, and the 4th digit strikes at once. <kbd>Backspace</kbd> fixes a typo. You move at 20% speed while typing, and others see TYPING over your head.</li>
+          <li>Wrong guesses are punished. Hide in bushes, under beds, behind curtains, in wardrobes and in dark rooms, standing still.</li>
+          <li>Items: <b>Master Key</b> (opens a red sealed door), <b>Flashlight</b>, <b class="pink">Code Shuffle</b> (new code). 2 slots, use with <kbd>E</kbd>/<kbd>R</kbd>, drop with <kbd>Q</kbd>. <b class="green">Hoods</b> mask 2 digits. Stay inside the zone. Last alive wins.</li>
+          <li>Doors open as you walk up; stairs are walked. <kbd>F</kbd> uses light switches, wardrobes, vents and the security monitors. Look into mirrors and puddles to glimpse your own digits.</li>
         </ul>
       </details>
     </div>
@@ -137,9 +137,9 @@
     <div id="lo-warn" class="lo-warn">⚠ LIGHTS OUT IMMINENT ⚠</div>
     <div id="glimpse" class="glimpse"></div>
     <div id="inventory" class="inventory">
-      <div class="slot empty" data-slot="0"><span class="key">1</span><span class="icon"></span><span class="nm">empty</span><div class="tip"></div></div>
-      <div class="slot empty" data-slot="1"><span class="key">2</span><span class="icon"></span><span class="nm">empty</span><div class="tip"></div></div>
-      <div class="drop-hint">Drop which? <kbd>1</kbd>/<kbd>2</kbd></div>
+      <div class="slot empty" data-slot="0"><span class="key">E</span><span class="icon"></span><span class="nm">empty</span><div class="tip"></div></div>
+      <div class="slot empty" data-slot="1"><span class="key">R</span><span class="icon"></span><span class="nm">empty</span><div class="tip"></div></div>
+      <div class="drop-hint">Drop which? <kbd>E</kbd>/<kbd>R</kbd></div>
     </div>
     <div id="vent-overlay" class="vent-overlay"><div class="vent-help"></div></div>
     <div id="security-overlay" class="security-overlay">
@@ -179,7 +179,7 @@
   <!-- KILL BOX -->
   <div id="killbox" class="killbox">
     <div class="kb-inner panel">
-      <div class="kb-title">KILL BOX</div>
+      <div class="kb-title">TYPE A CODE TO STRIKE</div>
       <div class="kb-digits">
         <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
         <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
@@ -187,7 +187,7 @@
         <div class="flip"><div class="face front">_</div><div class="face back">_</div></div>
       </div>
       <div class="kb-lock"><div class="kb-lock-bar"></div></div>
-      <div class="kb-help">Type 4 digits · <kbd>Enter</kbd> strike · <kbd>Esc</kbd>/<kbd>E</kbd> close · you are slowed</div>
+      <div class="kb-help">Just type the 4 digits — the 4th strikes · <kbd>Backspace</kbd> fix · <kbd>Del</kbd> clear · slowed while typing</div>
       <div class="kb-msg"></div>
     </div>
   </div>

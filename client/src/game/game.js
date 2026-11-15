@@ -132,6 +132,8 @@ export class Game {
       onToggle: (open) => this.socket.emit('killbox', { open }),
     });
     this.killbox.reset();
+    // A lobby text box (chat, settings) may still have keyboard focus: release it so keys reach the game
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur?.();
 
     this.deathUntil = 0;
     this.pendingSpectate = null;
@@ -365,20 +367,35 @@ export class Game {
 
   onKeyDown(e) {
     if (this.chatOpen || !this.running) return;
-    if (e.target instanceof HTMLInputElement) return;
+    // Only a text box you can actually see (the in-game chat) takes the keys. A lobby box that kept
+    // focus when the game started is hidden: drop its focus instead of swallowing every key.
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (e.target.offsetParent !== null) return;
+      e.target.blur();
+    }
     if (this.rewardOpen) {
       if (e.code === 'KeyZ') this.chooseReward('reveal');
       else if (e.code === 'KeyX') this.chooseReward('shuffle');
       return;
     }
-    if (this.killbox.isOpen && e.code !== 'KeyE' && this.killbox.handleKey(e)) {
+    const s = this.self;
+    // Codes: just type the digits (top row or numpad, any keyboard layout). The 4th digit strikes.
+    const digit = /^(Digit|Numpad)[0-9]$/.test(e.code) ? e.code.slice(-1) : null;
+    if (digit !== null) {
       e.preventDefault();
+      if (!e.repeat && s.alive && !s.vent) this.killbox.typeDigit(digit);
       return;
     }
-    if (e.repeat && ['KeyE', 'KeyF', 'KeyT', 'KeyQ', 'Digit1', 'Digit2', 'KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) return;
-    const s = this.self;
-    if (s.dropMode && (e.code === 'Digit1' || e.code === 'Digit2')) {
-      this.socket.emit('item:drop', { slot: e.code === 'Digit1' ? 0 : 1 });
+    if (e.code === 'Backspace' || e.code === 'Delete' || e.code === 'Escape') {
+      const used = e.code === 'Backspace' ? this.killbox.backspace() : this.killbox.clear();
+      if (used) {
+        e.preventDefault();
+        return;
+      }
+    }
+    if (e.repeat && ['KeyE', 'KeyR', 'KeyF', 'KeyT', 'KeyQ', 'KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) return;
+    if (s.dropMode && (e.code === 'KeyE' || e.code === 'KeyR')) {
+      this.socket.emit('item:drop', { slot: e.code === 'KeyE' ? 0 : 1 });
       s.dropMode = false;
       return;
     }
@@ -392,10 +409,6 @@ export class Game {
       if (v && v.to === null && e.code === 'KeyW' && v.links.length) this.socket.emit('vent:select', { to: v.links[s.ventSel % v.links.length] });
     }
     switch (e.code) {
-      case 'KeyE':
-        if (s.alive && !s.vent) this.killbox.toggle();
-        e.preventDefault();
-        return;
       case 'KeyF':
         if (s.alive) {
           this.socket.emit('interact', {}, (res) => {
@@ -403,10 +416,12 @@ export class Game {
           });
         }
         return;
-      case 'Digit1':
-      case 'Digit2':
+      // Items: E = slot 1, R = slot 2 (the number keys are for typing codes)
+      case 'KeyE':
+      case 'KeyR':
+        e.preventDefault();
         if (s.alive) {
-          const slot = e.code === 'Digit1' ? 0 : 1;
+          const slot = e.code === 'KeyE' ? 0 : 1;
           if (this.snap?.me.inv?.[slot]) {
             this.socket.emit('item:use', { slot });
             this.hud.flashSlot(slot);
@@ -528,6 +543,7 @@ export class Game {
   onDied(d) {
     if (!this.self.alive) return;
     this.killbox.reset();
+    this.killbox.setVisible(false);
     sfx.death();
     this.self.alive = false;
     this.self.locker = null;
@@ -995,7 +1011,7 @@ export class Game {
   updateHint() {
     const s = this.self;
     const hud = this.hud;
-    const base = 'WASD move · <kbd>Shift</kbd> crouch · <kbd>E</kbd> kill box · <kbd>F</kbd> use · <kbd>1</kbd><kbd>2</kbd> items · <kbd>Q</kbd> drop · <kbd>T</kbd> chat';
+    const base = 'WASD move · <kbd>Shift</kbd> crouch · <b>type 4 digits</b> to strike · <kbd>F</kbd> use · <kbd>E</kbd><kbd>R</kbd> items · <kbd>Q</kbd> drop · <kbd>T</kbd> chat';
     if (!s.alive) {
       hud.spectate.classList.toggle('on', !this.deathUntil);
       const info = this.spectateId ? this.roster.get(this.spectateId) : null;
@@ -1028,7 +1044,7 @@ export class Game {
       return;
     }
     if (s.locker !== null) {
-      hud.setHint('<span class="act">HIDING — CODE INVISIBLE</span><kbd>F</kbd> leave · Mouse to peek · <kbd>E</kbd> kill box');
+      hud.setHint('<span class="act">HIDING — CODE INVISIBLE</span><kbd>F</kbd> leave · Mouse to peek · type 4 digits to strike');
       return;
     }
     const it = findInteractable(this.map, s.x, s.z, s.level, {});
@@ -1049,7 +1065,7 @@ export class Game {
         const inv = this.snap?.me.inv || [];
         const slot = inv.indexOf('masterkey');
         act += slot >= 0
-          ? `<span class="act"><kbd>${slot + 1}</kbd> USE MASTER KEY</span>`
+          ? `<span class="act"><kbd>${slot === 0 ? 'E' : 'R'}</kbd> USE MASTER KEY</span>`
           : '<span class="act red">🔒 SEALED DOOR — needs a Master Key</span>';
       }
     }
@@ -1177,6 +1193,8 @@ export class Game {
     }
     this.world.update(dt, t, this.camera.position, s.alive ? s.level : 0);
 
+    // The code bar is on screen whenever you can strike
+    this.killbox.setVisible(s.alive && !s.vent && !s.watching && !this.deathUntil);
     this.killbox.update(snap ? snap.me.lockMs : 0);
     this.hud.click.classList.toggle('on', document.pointerLockElement !== this.canvas && !this.chatOpen && !this.rewardOpen);
     this.updateHint();

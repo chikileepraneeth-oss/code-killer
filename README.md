@@ -1,6 +1,6 @@
 # CODE KILLER
 
-A multiplayer hide-and-seek battle royale in a foggy 3D village. Every player has a secret 4-digit code floating over their head. **You can read everyone else's code, but never your own.** Open the kill box, type a living player's code, and they're gone. Last one alive wins.
+A multiplayer hide-and-seek battle royale in a foggy 3D village. Every player has a secret 4-digit code floating over their head. **You can read everyone else's code, but never your own.** Type a living player's code, and they're gone. Last one alive wins.
 
 ## Install & run
 
@@ -26,7 +26,11 @@ Port 3000 already taken locally? Run the server on another port and point the cl
 
 - **Your code is hidden from you.** It shows as `? ? ? ?` over your head and in the top-left HUD.
 - **Decoding:** from far away you see `? ? ? ?`. Get closer to reveal 1 digit, then 2 digits. Within about 6 m you see all 4. Each viewer decodes a given player's digits in its own fixed order. A fully decoded code turns **red**.
-- **Kill box (`E`):** type 4 digits and press `Enter`. You move at 20% speed while it's open, and other players see **TYPING** over your head. A wrong guess triggers the host's penalty. Typing your own code counts as a wrong guess.
+- **Striking: just type the 4 digits.** There's no key to open anything and no `Enter`.
+  - The digits appear in the code bar at the bottom of your screen as you type, and **the 4th digit strikes immediately**. `Backspace` fixes a typo; `Del` (or `Esc`) clears.
+  - While digits are entered you move at 20% speed and other players see **TYPING** over your head. Others never see the digits themselves.
+  - A half-typed code clears itself after 4 s.
+  - A wrong guess triggers the host's penalty, and typing your own code counts as a wrong guess.
 - **Line of sight:** walls and closed doors block codes. Windows and open doorways don't.
 - **Hiding:** stand still in a bush, under a bed, behind a curtain, or in any dark room or basement, and your code disappears. **Wardrobes and lockers** (`F`) hide you completely.
 - **Mirrors and puddles:** stand in front of one and look at it. Every 5 s there's a 25% chance you glimpse **one** digit of your own code and its position.
@@ -59,10 +63,10 @@ Port 3000 already taken locally? Run the server on another port and point the cl
 |---|---|
 | WASD / Mouse | Move / look (click the game to lock the mouse). Doors open by themselves when you walk up to them, and stairs are walked up like ramps. |
 | Shift | Crouch-walk (silent, 50% speed) |
-| E | Kill box: digits, `Backspace`, `Enter` to strike, `Esc` to close |
+| 0–9 (top row or numpad) | Type a code: the 4th digit strikes. `Backspace` fix, `Del`/`Esc` clear |
 | F | Use whatever is nearest: light switch, wardrobe/locker, vent, security monitors |
-| 1 / 2 | Use the item in slot 1 / 2 |
-| Q | Drop an item (`Q` then `1`/`2` when carrying two) |
+| E / R | Use the item in slot 1 / 2 |
+| Q | Drop an item (`Q` then `E`/`R` when carrying two) |
 | T or Enter | Chat |
 | In a vent | `A`/`D` pick a duct, hold `W` to crawl (`S` to go back), `F` to climb out at an opening |
 | Bounty reward | `Z` = learn your code, `X` = shuffle (or click a card) |
@@ -144,7 +148,7 @@ server/src/
 client/src/
   game/world.js   renderer (merged geometry per material and region, light pool, reflectors, pooled pickups)
   game/game.js    loop, prediction/interpolation, cameras, death screen + spectating, shader warm-up, spike logger
-  ui/             HUD (inventory, death screen, bounty, minimap), kill box
+  ui/             HUD (inventory, death screen, bounty, minimap), killbox.js = the type-to-strike code bar
 ```
 
 ## Deployment (server on Render free plan, client on Netlify)
