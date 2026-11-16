@@ -10,7 +10,7 @@ import {
 import { clank, doorSound, footstep, ownStep, setAmbient, setListener, sfx, sirenFor } from '../audio.js';
 import { escapeHtml } from '../ui/hud.js';
 import { KillBox } from '../ui/killbox.js';
-import { Character } from './character.js';
+import { Character, setCodeStyle } from './character.js';
 import { World } from './world.js';
 import { getQuality } from '../quality.js';
 
@@ -45,6 +45,7 @@ export class Game {
     this.onToast = onToast;
     this.map = prepareMap(start.map);
     this.settings = start.settings;
+    setCodeStyle(this.settings.codeStyle);
     this.selfId = start.selfId;
     this.roster = new Map(roster.map((p) => [p.id, p]));
     for (const p of start.players) this.roster.set(p.id, p);

@@ -44,6 +44,7 @@
         <ul>
           <li>A secret 4-digit code floats over every head. You see theirs, never your own (<b>? ? ? ?</b>).</li>
           <li>Get close to decode digits. Walls block your view.</li>
+          <li><b>Face-to-face mode</b> (host picks it in the lobby): codes sit on foreheads, so you can only read someone who is <b>facing you</b>, and then they can read you too. Sneak up from behind and you'll see nothing.</li>
           <li>To strike, just <b>type a living player's 4 digits</b>. They show at the bottom of your screen as you type, and the 4th digit strikes at once. <kbd>Backspace</kbd> fixes a typo. You move at 20% speed while typing, and others see TYPING over your head.</li>
           <li>Wrong guesses are punished. Hide in bushes, under beds, behind curtains, in wardrobes and in dark rooms, standing still.</li>
           <li>Items: <b>Master Key</b> (opens a red sealed door), <b>Flashlight</b>, <b class="pink">Code Shuffle</b> (new code). 2 slots, use with <kbd>E</kbd>/<kbd>R</kbd>, drop with <kbd>Q</kbd>. <b class="green">Hoods</b> mask 2 digits. Stay inside the zone. Last alive wins.</li>
@@ -83,6 +84,12 @@
           <h3>Settings <span id="settings-note" class="muted"></span></h3>
           <form id="settings" class="settings">
             <div id="map-size" class="map-size"></div>
+            <label>Game mode
+              <select name="codeStyle">
+                <option value="overhead">Overhead: codes float above heads</option>
+                <option value="face">Face-to-face: codes on foreheads</option>
+              </select>
+            </label>
             <label>Max players <input type="number" name="maxPlayers" min="2" max="16" /></label>
             <label>Wrong guess penalty
               <select name="penaltyType">

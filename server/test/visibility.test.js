@@ -98,3 +98,21 @@ test('view cone (bots see like a first-person camera): only what is in front', (
   assert.equal(visibleCode(v, mk('t', -2, -8), ctx(), { cone: true }), '4821');
   assert.equal(visibleCode({ ...v, hoodUntil: 0 }, mk('t', -2, -8, { hoodUntil: 5000, hoodDigits: [0, 1] }), ctx(), { cone: true }), '??21', 'hood still applies');
 });
+
+test('face-to-face mode: only readable while the target faces the viewer', () => {
+  const fctx = (extra = {}) => makeCtx(map, 1000, { faceOnly: true, ...extra });
+  const v = mk('v', -6, -8);
+  // Target 4 units east of the viewer
+  const facing = mk('t', -2, -8, { lookX: -1, lookZ: 0 }); // looking west, at the viewer
+  const away = mk('t', -2, -8, { lookX: 1, lookZ: 0 }); // back turned
+  const side = mk('t', -2, -8, { lookX: 0, lookZ: 1 }); // 90° off
+  const slight = mk('t', -2, -8, { lookX: -Math.cos(0.6), lookZ: Math.sin(0.6) }); // ~34° off: still facing
+  assert.equal(visibleCode(v, facing, fctx()), '4821');
+  assert.equal(visibleCode(v, away, fctx()), null);
+  assert.equal(visibleCode(v, side, fctx()), null);
+  assert.equal(visibleCode(v, slight, fctx()), '4821');
+  // Overhead mode ignores facing
+  assert.equal(visibleCode(v, away, ctx()), '4821');
+  // Ghosts still read everything
+  assert.equal(visibleCode(mk('g', -6, -8, { alive: false }), away, fctx()), '4821');
+});

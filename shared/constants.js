@@ -69,6 +69,11 @@ export const KILL_RATE = {
 
 export const PENALTY_TYPES = ['lockout', 'reveal', 'death'];
 export const ZONE_SPEEDS = ['slow', 'normal', 'fast'];
+// Where codes are shown: 'overhead' = floating above the head, readable from any angle;
+// 'face' = on the forehead, readable only while the target is facing you (face-to-face standoffs).
+export const CODE_STYLES = ['overhead', 'face'];
+// Face-to-face mode: the target must be facing you within this half-angle for you to read their code.
+export const FACE_HALF_ANGLE = (55 * Math.PI) / 180;
 export const DEFAULT_SETTINGS = {
   maxPlayers: 10,
   penaltyType: 'lockout',
@@ -78,6 +83,7 @@ export const DEFAULT_SETTINGS = {
   graceSeconds: 15,
   zoneSpeed: 'normal',
   lightsOut: true,
+  codeStyle: 'overhead',
 };
 
 export const SETTINGS_LIMITS = {

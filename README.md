@@ -31,6 +31,9 @@ Port 3000 already taken locally? Run the server on another port and point the cl
   - While digits are entered you move at 20% speed and other players see **TYPING** over your head. Others never see the digits themselves.
   - A half-typed code clears itself after 4 s.
   - A wrong guess triggers the host's penalty, and typing your own code counts as a wrong guess.
+- **Game mode (host picks in the lobby):**
+  - **Overhead (default):** codes float above heads and can be read from any angle, even from behind.
+  - **Face-to-face:** codes sit on a plate on each forehead. You can only read a player while they are **facing you** (within about 55° of where they look). From the side they show `? ? ? ?`, and from behind you see nothing. Reading someone means they can usually read you too, so every meeting is a standoff. Turning away is a defence. Bots, security cameras and the distance tiers all follow the same rule. Ghosts still see everything.
 - **Line of sight:** walls and closed doors block codes. Windows and open doorways don't.
 - **Hiding:** stand still in a bush, under a bed, behind a curtain, or in any dark room or basement, and your code disappears. **Wardrobes and lockers** (`F`) hide you completely.
 - **Mirrors and puddles:** stand in front of one and look at it. Every 5 s there's a 25% chance you glimpse **one** digit of your own code and its position.

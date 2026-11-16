@@ -1,4 +1,4 @@
-import { FLASHLIGHT, VIEW_FOV, VIS } from '../../shared/constants.js';
+import { FACE_HALF_ANGLE, FLASHLIGHT, VIEW_FOV, VIS } from '../../shared/constants.js';
 import { dist2D, hasLineOfSight } from '../../shared/geometry.js';
 import { hashString, mulberry32 } from '../../shared/rng.js';
 import { isDarkSpot, levelGeo } from '../../shared/world.js';
@@ -58,11 +58,23 @@ export function inViewCone(viewer, target, fov = VIEW_FOV) {
   return (dx * lx + dz * lz) / d >= Math.cos(fov / 2);
 }
 
+/** Is the target facing the viewer (viewer inside the target's front cone)? Used by face-to-face mode. */
+export function facesViewer(target, viewer, halfAngle = FACE_HALF_ANGLE) {
+  const dx = viewer.x - target.x;
+  const dz = viewer.z - target.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 0.01) return true;
+  const lx = target.lookX ?? 0;
+  const lz = target.lookZ ?? 1;
+  return (dx * lx + dz * lz) / d >= Math.cos(halfAngle);
+}
+
 /**
- * Build a visibility context: { map, now, lightsOut, doors (state string), lights (state string) }
+ * Build a visibility context: { map, now, lightsOut, doors (state string), lights (state string), faceOnly }
+ * faceOnly: face-to-face mode, codes are only readable while the target faces the viewer.
  */
 export function makeCtx(map, now, o = {}) {
-  const ctx = { map, now, lightsOut: !!o.lightsOut, doors: o.doors ?? '', lights: o.lights ?? '' };
+  const ctx = { map, now, lightsOut: !!o.lightsOut, doors: o.doors ?? '', lights: o.lights ?? '', faceOnly: !!o.faceOnly };
   ctx.geo = (level) => levelGeo(map, level, ctx.doors);
   return ctx;
 }
@@ -86,6 +98,7 @@ export function visibleCode(viewer, target, ctx, opts = {}) {
   if (viewer.vent) return null;
   if ((viewer.level ?? 0) !== (target.level ?? 0)) return null;
   if (opts.cone && !inViewCone(viewer, target)) return null;
+  if (ctx.faceOnly && !facesViewer(target, viewer)) return null;
 
   const d = dist2D(viewer.x, viewer.z, target.x, target.z);
   let dark = ctx.lightsOut || isDarkSpot(ctx.map, target.x, target.z, target.level ?? 0, ctx.lights);

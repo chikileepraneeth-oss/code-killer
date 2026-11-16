@@ -3,6 +3,13 @@ import { glowTexture, iconTexture } from './world.js';
 
 const SCRAMBLE_MS = 380;
 
+// 'overhead' (billboard above the head) or 'face' (a plate on the forehead, only readable from the front).
+let codeStyle = 'overhead';
+export function setCodeStyle(style) {
+  codeStyle = style === 'face' ? 'face' : 'overhead';
+}
+const PLATE_W = 0.62; // forehead plate width up close (m)
+
 /** Billboard text sprite backed by a canvas. */
 class Label {
   constructor(w, h, scale) {
@@ -224,6 +231,21 @@ export class Character {
     this.codeLabel.sprite.position.y = 2.75;
     this.root.add(this.nameLabel.sprite, this.codeLabel.sprite);
     if (isSelf) this.nameLabel.sprite.visible = false;
+    // Face-to-face mode: the code is a one-sided plate on the forehead instead of a billboard, so it
+    // turns with the head and can't be seen from behind.
+    this.face = codeStyle === 'face';
+    this.plate = null;
+    if (this.face) {
+      this.codeLabel.sprite.visible = false;
+      this.plate = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 96 / 256),
+        new THREE.MeshBasicMaterial({ map: this.codeLabel.tex, transparent: true, depthWrite: false, side: THREE.FrontSide }),
+      );
+      this.plate.position.set(0, 1.88, 0.3);
+      this.plate.scale.set(PLATE_W, PLATE_W, 1);
+      this.plate.renderOrder = 10;
+      this.root.add(this.plate);
+    }
 
     this.walkPhase = 0;
     this.ghost = false;
@@ -237,7 +259,7 @@ export class Character {
   setLod(far, shadow) {
     this.body.visible = !far;
     this.nameLabel.sprite.visible = !far && !this.isSelf;
-    this.codeLabel.sprite.visible = !far && !this.ghost;
+    this.codeObj.visible = !far && !this.ghost;
     if (shadow !== this.shadowOn && !this.ghost) {
       this.shadowOn = shadow;
       for (const m of this.castMeshes) m.castShadow = shadow;
@@ -253,8 +275,13 @@ export class Character {
       m.depthWrite = !on;
       m.needsUpdate = true;
     }
-    this.codeLabel.sprite.visible = !on;
+    this.codeObj.visible = !on;
     this.body.traverse((o) => { if (o.isMesh) o.castShadow = !on; });
+  }
+
+  /** The object that shows the code: the forehead plate in face-to-face mode, else the overhead billboard. */
+  get codeObj() {
+    return this.plate || this.codeLabel.sprite;
   }
 
   setCode(code, typing = false) {
@@ -290,10 +317,16 @@ export class Character {
     const labelY = s.crouch ? 0.45 : 0;
     this.nameLabel.sprite.position.y = 2.25 - labelY;
     this.codeLabel.sprite.position.y = 2.75 - labelY;
+    if (this.plate) this.plate.position.y = 1.88 * this.body.scale.y + this.body.position.y; // follows crouch / sitting
     // Keep labels readable at distance
     if (camera) {
       const d = camera.position.distanceTo(this.root.position);
       const k = 1 + Math.max(0, d - 8) * 0.035;
+      if (this.plate) {
+        // Grows faster than the billboard: a forehead plate is small, and it still has to be readable at range
+        const kp = 1 + Math.max(0, d - 4) * 0.07;
+        this.plate.scale.set(PLATE_W * kp, PLATE_W * kp, 1);
+      }
       this.codeLabel.sprite.scale.set(this.codeLabel.baseScale * k, ((this.codeLabel.baseScale * 96) / 256) * k, 1);
       this.nameLabel.sprite.scale.set(this.nameLabel.baseScale * k, ((this.nameLabel.baseScale * 56) / 256) * k, 1);
     }

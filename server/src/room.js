@@ -1,6 +1,6 @@
 import {
   BOT_NAMES, CROUCH_MULT, DEFAULT_SETTINGS, GHOST_SPEED, HIDE_STILL_MS, KILLBOX_MULT, KILL_RATE, LEVEL_HEIGHT,
-  MAX_HEALTH, PENALTY_TYPES, PLAYER_COLORS, PLAYER_RADIUS, SETTINGS_LIMITS, SHIMMER_DURATION, WALK_SPEED,
+  CODE_STYLES, MAX_HEALTH, PENALTY_TYPES, PLAYER_COLORS, PLAYER_RADIUS, SETTINGS_LIMITS, SHIMMER_DURATION, WALK_SPEED,
   ZONE_DAMAGE, ZONE_FRACTIONS, ZONE_PRESETS, ZONE_SPEEDS, zoneStartRadius, zoneTimeScale,
 } from '../../shared/constants.js';
 import { clamp, dist2D, moveWithCollisions, resolveCollisions } from '../../shared/geometry.js';
@@ -166,6 +166,7 @@ export class Room {
     if (PENALTY_TYPES.includes(patch.penaltyType)) s.penaltyType = patch.penaltyType;
     if (ZONE_SPEEDS.includes(patch.zoneSpeed)) s.zoneSpeed = patch.zoneSpeed;
     if (typeof patch.lightsOut === 'boolean') s.lightsOut = patch.lightsOut;
+    if (CODE_STYLES.includes(patch.codeStyle)) s.codeStyle = patch.codeStyle;
     ['maxPlayers', 'lockoutSeconds', 'revealSeconds', 'deathAfter', 'graceSeconds'].forEach(int);
     s.maxPlayers = Math.max(s.maxPlayers, this.players.size);
     this.settings = s;
@@ -649,6 +650,7 @@ export class Room {
       lightsOut: g.lo.phase === 'on',
       doors: g.doorStr,
       lights: g.lightStr,
+      faceOnly: this.settings.codeStyle === 'face',
     });
   }
 
